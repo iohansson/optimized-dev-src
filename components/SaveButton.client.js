@@ -5,9 +5,10 @@
 //     all the JavaScript used in this file, but that means we can do some
 //     interesting interactive stuff."
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 import { cn } from "../lib/cn";
+import { suspensify } from "../lib/suspensify";
 
 /**
  * A button that saves or unsaves an RSS feed item. It toggles between
@@ -37,11 +38,18 @@ const SaveButton = ({
   //         something new.
 
   const [clientSideIsSaved, setClientSideIsSaved] = useState();
+  const [isPending, startTransition] = useTransition();
   const isSaved = clientSideIsSaved ?? initialIsSaved;
+  const [promise, setPromise] = useState();
+
+  if (promise) promise.read();
 
   const toggle = () => {
-    // 🐔 "This is probably where you'll need to use the `save()` and
-    //     `unsave()` functions."
+    startTransition(() => {
+      setPromise(
+        suspensify(isSaved ? unsave() : save()),
+      );
+    });
   };
 
   const save = async () => {
@@ -98,12 +106,15 @@ const SaveButton = ({
   //     `suspensify()` function from `lib/suspensify.js`"
 
   return (
-    <button
-      onClick={toggle}
-      className={cn("capsize", isSaved && "font-bold text-rose-500")}
-    >
-      {isSaved ? "Unsave" : "Save"}
-    </button>
+    <>
+      <button
+        onClick={toggle}
+        className={cn("capsize", isSaved && !isPending && "font-bold text-rose-500")}
+        disabled={isPending}
+      >
+        {isPending ? 'Loading...' : (isSaved ? "Unsave" : "Save")}
+      </button>
+    </>
   );
 };
 
