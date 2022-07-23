@@ -11,6 +11,10 @@
  */
 
 import SaveButton from "./SaveButton.client";
+import dayjs from "dayjs";
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+dayjs.extend(relativeTime);
 
 /**
  * Displays an RSS feed item, including its title, feed name, and link to its
@@ -59,7 +63,7 @@ const FeedItem = ({
           <dt className="sr-only">Published Date</dt>
           <dd className="capsize">
             {/* 🐔 "Can we get a nicer looking date here, pleeease?" */}
-            {publishedAt}
+            {dayjs(publishedAt).fromNow()}
             {/* 🐔 "This component is only rendered on the server, so feel free
              *      to use whatever date library you want. Bundle size really
              *      doesn't matter."
